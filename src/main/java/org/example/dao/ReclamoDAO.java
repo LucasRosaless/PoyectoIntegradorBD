@@ -28,12 +28,16 @@ public class ReclamoDAO {
 	}
 
 	public List<ReclamoResumen> listarReclamosPorUsuarioConRellamados(int usuarioId) throws SQLException {
-		String sql = "SELECT reclamos.id, reclamos.descripcion, COUNT(rellamados.id)" +
-                "FROM reclamos" +
-                "LEFT JOIN rellamados ON rellamados.reclamo_id = reclamos.id" +
-                "WHERE reclamos.usuario_id = ?" +
-                "GROUP BY reclamos.id, reclamos.descripcion" +
-                "ORDER BY reclamos.id";
+		String sql = "SELECT " +
+			"r.Nro_reclamo AS id, " +
+			"COALESCE(MIN(m.Descripcion), '(sin motivo)') AS descripcion, " +
+			"COUNT(rel.Nro_reclamo) AS cantidad_rellamados " +
+			"FROM Reclamo r " +
+			"LEFT JOIN Motivo m ON m.Nro_reclamo = r.Nro_reclamo " +
+			"LEFT JOIN Rellamado rel ON rel.Nro_reclamo = r.Nro_reclamo " +
+			"WHERE r.Id_usuario = ? " +
+			"GROUP BY r.Nro_reclamo " +
+			"ORDER BY r.Nro_reclamo";
 		List<ReclamoResumen> lista = new ArrayList<>();
 		try (Connection con = dbConnection.getConnection();
 			 PreparedStatement ps = con.prepareStatement(sql)) {
